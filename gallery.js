@@ -225,3 +225,28 @@ function reshuffleColors() {
 
 renderGallery();
 setInterval(reshuffleColors, 800);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BACKGROUND PREFETCH
+// Quietly warms the browser cache with full-size images one at a time during
+// idle moments, so by the time a picture is clicked it likely opens instantly.
+// ─────────────────────────────────────────────────────────────────────────────
+function prefetchFullImages() {
+  const conn = navigator.connection;
+  if (conn && (conn.saveData || /2g/.test(conn.effectiveType || ''))) return;
+
+  let i = 0;
+  const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 200));
+
+  function next() {
+    if (i >= IMAGES.length) return;
+    const img = new Image();
+    if ('fetchPriority' in img) img.fetchPriority = 'low';
+    img.decoding = 'async';
+    img.onload = img.onerror = () => idle(next);
+    img.src = IMAGES[i++].src;
+  }
+  idle(next);
+}
+
+window.addEventListener('load', prefetchFullImages);
