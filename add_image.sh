@@ -27,6 +27,19 @@ IMG_PATH="$SCRIPT_DIR/images/$FILENAME"
 
 [[ -f "$IMG_PATH" ]] || { echo "Error: images/$FILENAME not found"; exit 1; }
 
+# ── Thumbnail (resized + compressed WebP, used in the grid) ───────────────────
+THUMB_NAME="${FILENAME%.*}.webp"
+THUMB_PATH="$SCRIPT_DIR/images/thumbs/$THUMB_NAME"
+mkdir -p "$SCRIPT_DIR/images/thumbs"
+if command -v magick &>/dev/null; then
+  magick "$IMG_PATH" -resize '700x700>' -strip -quality 80 "$THUMB_PATH"
+elif command -v convert &>/dev/null; then
+  convert "$IMG_PATH" -resize '700x700>' -strip -quality 80 "$THUMB_PATH"
+else
+  echo "Warning: ImageMagick not found, skipping thumbnail generation (grid will use the full-size image)"
+  THUMB_PATH=""
+fi
+
 # ── Dimensions ────────────────────────────────────────────────────────────────
 if command -v identify &>/dev/null; then
   read -r W H <<< "$(identify -format "%w %h" "$IMG_PATH")"
@@ -51,18 +64,22 @@ else
 fi
 
 # ── Patch gallery.js ──────────────────────────────────────────────────────────
+THUMB_REL=""
+[[ -n "$THUMB_PATH" ]] && THUMB_REL="images/thumbs/$THUMB_NAME"
+
 PATCH_PY='
 import sys, json, re
 
-js_path, filename, w, h, short, long_ = sys.argv[1:7]
+js_path, filename, w, h, short, long_, thumb_rel = sys.argv[1:8]
 src      = "images/" + filename
 short_js = json.dumps(short)
 long_js  = json.dumps(long_)
+thumb_part = (", thumb: " + json.dumps(thumb_rel)) if thumb_rel else ""
 
 if short == long_:
-    entry = "  { src: " + json.dumps(src) + ", width: " + w + ", height: " + h + ", title: " + long_js + ", alt: " + short_js + " },"
+    entry = "  { src: " + json.dumps(src) + thumb_part + ", width: " + w + ", height: " + h + ", title: " + long_js + ", alt: " + short_js + " },"
 else:
-    entry = "  { src: " + json.dumps(src) + ", width: " + w + ", height: " + h + ", title: " + long_js + ", shortTitle: " + short_js + ", alt: " + short_js + " },"
+    entry = "  { src: " + json.dumps(src) + thumb_part + ", width: " + w + ", height: " + h + ", title: " + long_js + ", shortTitle: " + short_js + ", alt: " + short_js + " },"
 
 content = open(js_path).read()
 patched = re.sub(r"(\n\];)", "\n" + entry + r"\1", content, count=1)
@@ -74,4 +91,4 @@ open(js_path, "w").write(patched)
 print("Added: " + entry.strip())
 '
 
-python3 -c "$PATCH_PY" "$GALLERY_JS" "$FILENAME" "$W" "$H" "$SHORT" "$LONG"
+python3 -c "$PATCH_PY" "$GALLERY_JS" "$FILENAME" "$W" "$H" "$SHORT" "$LONG" "$THUMB_REL"

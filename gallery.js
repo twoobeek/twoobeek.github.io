@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // IMAGE DATA
 // Each entry needs:
-//   src        – path to the image (relative to index.html, or a full URL)
+//   src        – path to the full-size image, used in the lightbox (relative to index.html, or a full URL)
+//   thumb      – optional smaller/compressed image used in the grid (falls back to src)
 //   width      – actual pixel width  of the image  (used for aspect ratio only)
 //   height     – actual pixel height of the image  (used for aspect ratio only)
 //   alt        – short description (good for accessibility / SEO)
@@ -13,15 +14,15 @@
 //   description – optional, small text shown below the title in the lightbox
 // ─────────────────────────────────────────────────────────────────────────────
 const IMAGES = [
-  { src: 'images/bad_dream.png',  width: 1391, height: 1833, title: 'Bad Dream',  alt: 'Bad Dream' },
-  { src: 'images/i_m_cooked.png', width: 1379, height: 2273, title: "Man, I'm Cooked", shortTitle: "I'm Cooked", alt: "I'm Cooked" },
-  { src: 'images/mindreader.png',        width: 2561, height: 1941, title: 'Mindreader',          alt: 'Mindreader' },
-  { src: 'images/toa_tahu_mata_sam.png', width: 1667, height: 2120, title: 'Toa Tahu Mata Sam', alt: 'Toa Tahu Mata Sam' },
-  { src: 'images/milky_way.png',         width: 1457, height: 610,  title: 'Milky Way', alt: 'Milky Way', description: "The global (international) version." },
-  { src: "images/inoperable_brainfrog.png", width: 1197, height: 1545, title: "Inoperable Brainfrog", alt: "Inoperable Brainfrog" },
-  { src: "images/wolfman.png", width: 945, height: 414, title: "Wolf Man", alt: "Wolf Man", rotateWords: { Man: -90 } },
-  { src: "images/earth_angel.png", width: 1728, height: 1647, title: "Earth Angel Defeating Duck O'Devil", shortTitle: "Earth Angel", alt: "Earth Angel", description: "You may not be able to hear it, but in this picture, Halo the Living Nimbus is saying: \"Yeah, dude! Get that fucking bastard!\"" },
-  { src: "images/leonardo.png", width: 641, height: 581, title: "Leonardo da Vinci", shortTitle: "Leonardo", alt: "Leonardo", description: "Self-portrait, 1998, Oil on oak panel, The State Hermitage Museum." },
+  { src: 'images/bad_dream.png',  thumb: 'images/thumbs/bad_dream.webp',  width: 1391, height: 1833, title: 'Bad Dream',  alt: 'Bad Dream' },
+  { src: 'images/i_m_cooked.png', thumb: 'images/thumbs/i_m_cooked.webp', width: 1379, height: 2273, title: "Man, I'm Cooked", shortTitle: "I'm Cooked", alt: "I'm Cooked" },
+  { src: 'images/mindreader.png',        thumb: 'images/thumbs/mindreader.webp',        width: 2561, height: 1941, title: 'Mindreader',          alt: 'Mindreader' },
+  { src: 'images/toa_tahu_mata_sam.png', thumb: 'images/thumbs/toa_tahu_mata_sam.webp', width: 1667, height: 2120, title: 'Toa Tahu Mata Sam', alt: 'Toa Tahu Mata Sam' },
+  { src: 'images/milky_way.png',         thumb: 'images/thumbs/milky_way.webp',         width: 1457, height: 610,  title: 'Milky Way', alt: 'Milky Way', description: "The global (international) version." },
+  { src: "images/inoperable_brainfrog.png", thumb: "images/thumbs/inoperable_brainfrog.webp", width: 1197, height: 1545, title: "Inoperable Brainfrog", alt: "Inoperable Brainfrog" },
+  { src: "images/wolfman.png", thumb: "images/thumbs/wolfman.webp", width: 945, height: 414, title: "Wolf Man", alt: "Wolf Man", rotateWords: { Man: -90 } },
+  { src: "images/earth_angel.png", thumb: "images/thumbs/earth_angel.webp", width: 1728, height: 1647, title: "Earth Angel Defeating Duck O'Devil", shortTitle: "Earth Angel", alt: "Earth Angel", description: "You may not be able to hear it, but in this picture, Halo the Living Nimbus is saying: \"Yeah, dude! Get that fucking bastard!\"" },
+  { src: "images/leonardo.png", thumb: "images/thumbs/leonardo.webp", width: 641, height: 581, title: "Leonardo da Vinci", shortTitle: "Leonardo", alt: "Leonardo", description: "Self-portrait, 1998, Oil on oak panel, The State Hermitage Museum." },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,8 +57,9 @@ function renderGallery() {
     const img = document.createElement('img');
     img.alt = item.alt;
     img.loading = 'lazy';
+    img.decoding = 'async';
     img.addEventListener('load', () => img.classList.add('visible'));
-    img.src = item.src;
+    img.src = item.thumb || item.src;
 
     const caption = document.createElement('span');
     caption.className = 'g-caption';
