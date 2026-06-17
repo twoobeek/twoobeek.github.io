@@ -187,6 +187,7 @@ lbClose.addEventListener('click', closeLightbox);
 
 lightbox.addEventListener('click', (e) => {
   if (e.target.closest('.lb-close')) return;
+  if (Date.now() < suppressClickUntil) return;
   const half = window.innerWidth / 2;
   navigate(e.clientX < half ? -1 : 1);
 });
@@ -200,10 +201,20 @@ document.addEventListener('keydown', (e) => {
 
 // Touch swipe support
 let touchX = 0;
+let isMultiTouch = false;
+let suppressClickUntil = 0;
 lightbox.addEventListener('touchstart', (e) => {
+  isMultiTouch = e.touches.length > 1;
   touchX = e.touches[0].clientX;
 }, { passive: true });
+lightbox.addEventListener('touchmove', (e) => {
+  if (e.touches.length > 1) isMultiTouch = true;
+}, { passive: true });
 lightbox.addEventListener('touchend', (e) => {
+  // after a pinch/multi-touch gesture, the browser may fire a synthetic
+  // "click" afterwards — ignore it instead of letting it navigate
+  suppressClickUntil = Date.now() + 500;
+  if (isMultiTouch) return;
   const delta = e.changedTouches[0].clientX - touchX;
   if (Math.abs(delta) > 50) navigate(delta < 0 ? 1 : -1);
 }, { passive: true });
