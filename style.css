@@ -80,18 +80,20 @@ main {
   pointer-events: none;
 }
 
-.g-item:hover::after {
-  background: rgba(255, 255, 255, 0.06);
-}
+@media (hover: hover) and (pointer: fine) {
+  .g-item:hover::after {
+    background: rgba(255, 255, 255, 0.06);
+  }
 
-.g-item:hover,
-.g-item:focus-visible {
-  transform: rotate(var(--hover-rotate, 1.5deg));
-  transform-origin: center center;
-  z-index: 1;
-  outline: 3px solid #FDC300;
-  outline-offset: 0px;
-  animation-play-state: paused;
+  .g-item:hover,
+  .g-item:focus-visible {
+    transform: rotate(var(--hover-rotate, 1.5deg));
+    transform-origin: center center;
+    z-index: 1;
+    outline: 3px solid #FDC300;
+    outline-offset: 0px;
+    animation-play-state: paused;
+  }
 }
 
 .g-item img {
@@ -106,9 +108,11 @@ main {
   opacity: 0.72;
 }
 
-.g-item:hover img.visible,
-.g-item:focus-visible img.visible {
-  opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+  .g-item:hover img.visible,
+  .g-item:focus-visible img.visible {
+    opacity: 1;
+  }
 }
 
 .g-caption {
@@ -136,10 +140,12 @@ main {
   line-height: 0.85;
 }
 
-.g-item:hover .g-caption,
-.g-item:focus-visible .g-caption {
-  opacity: 0;
-  transition: none;
+@media (hover: hover) and (pointer: fine) {
+  .g-item:hover .g-caption,
+  .g-item:focus-visible .g-caption {
+    opacity: 0;
+    transition: none;
+  }
 }
 
 @media (max-width: 900px) { #gallery { columns: 3; } }
