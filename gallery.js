@@ -97,8 +97,6 @@ const lbDescription = document.getElementById('lb-description');
 const lbBg      = document.getElementById('lb-bg');
 const lbSpinner = lightbox.querySelector('.lb-spinner');
 const lbClose   = lightbox.querySelector('.lb-close');
-const lbPrev    = lightbox.querySelector('.lb-prev');
-const lbNext    = lightbox.querySelector('.lb-next');
 
 function openLightbox(index) {
   prevFocus = document.activeElement;
@@ -139,8 +137,6 @@ function loadLightboxImage() {
   renderLightboxTitle(item);
   lbDescription.textContent = item.description || '';
   lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
-  lbPrev.disabled = currentIdx === 0;
-  lbNext.disabled = currentIdx === IMAGES.length - 1;
 }
 
 function renderLightboxTitle(item) {
@@ -186,11 +182,11 @@ function navigate(delta) {
 
 // Lightbox event listeners
 lbClose.addEventListener('click', closeLightbox);
-lbPrev.addEventListener('click', () => navigate(-1));
-lbNext.addEventListener('click', () => navigate(1));
 
 lightbox.addEventListener('click', (e) => {
-  if (e.target === lightbox) closeLightbox();
+  if (e.target.closest('.lb-close')) return;
+  const half = window.innerWidth / 2;
+  navigate(e.clientX < half ? -1 : 1);
 });
 
 document.addEventListener('keydown', (e) => {
