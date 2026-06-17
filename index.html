@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twoobeek</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>TWOOBEEK</h1>
+  </header>
+
+  <main>
+    <div id="gallery"></div>
+  </main>
+
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Image viewer" aria-hidden="true">
+    <div id="lb-bg" class="lb-bg"></div>
+    <button class="lb-close" aria-label="Close">&times;</button>
+    <div class="lb-body">
+      <div class="lb-stage-col">
+        <div class="lb-stage">
+          <div class="lb-spinner"></div>
+          <img id="lb-img" src="" alt="">
+        </div>
+        <div class="lb-controls">
+          <button class="lb-prev" aria-label="Previous">&#8592;</button>
+          <button class="lb-next" aria-label="Next">&#8594;</button>
+        </div>
+      </div>
+      <div class="lb-info">
+        <div class="lb-info-inner">
+          <p id="lb-title" class="lb-title"></p>
+          <p id="lb-description" class="lb-description"></p>
+        </div>
+      </div>
+    </div>
+    <p class="lb-counter" aria-live="polite"></p>
+  </div>
+
+  <script src="gallery.js"></script>
+</body>
+</html>
