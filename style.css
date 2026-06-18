@@ -107,6 +107,7 @@ main {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .g-item img.visible {
@@ -235,6 +236,7 @@ main {
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
+  -webkit-touch-callout: none;
 }
 
 @keyframes lb-fade-in {
