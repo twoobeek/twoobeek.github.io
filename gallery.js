@@ -153,7 +153,17 @@ function setLightboxMeta(item) {
   renderLightboxTitle(item);
   lbDescription.textContent = item.description || '';
   lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
-  lbBg.style.backgroundImage = `url(${item.src})`;
+
+  // use the small (likely already-cached) thumb, and only swap once it has
+  // actually loaded — the old backdrop stays put until then, so there's
+  // never a blank gap between pictures
+  const bgSrc = item.thumb || item.src;
+  const probe = new Image();
+  probe.onload = () => {
+    if (IMAGES[currentIdx] !== item) return; // navigated again before this finished loading
+    lbBg.style.backgroundImage = `url(${bgSrc})`;
+  };
+  probe.src = bgSrc;
 }
 
 function loadLightboxImage(delta = 0) {
@@ -254,10 +264,12 @@ const COMMIT_MIN_DISTANCE = 24; // a flick still needs to have moved this many p
 let isMultiTouch = false;
 let suppressClickUntil = 0;
 let touchStartX = 0;
+let touchStartY = 0;
 let touchStartTime = 0;
 let dragDelta = 0;
 let dragDirection = 0; // -1 = prev, 1 = next, 0 = none
 let stageWidth = 0;
+let gestureAxis = null; // 'x' | 'y' | null (undecided) — locked once movement clears the dead zone
 
 // Lets an in-flight 200ms "settle" animation (cancel or commit) be finished
 // immediately instead of silently dropped if a new touch starts before it's
@@ -290,6 +302,7 @@ function hardResetDrag() {
   lbImg.classList.add('visible');
   dragDelta = 0;
   dragDirection = 0;
+  gestureAxis = null;
 }
 
 lightbox.addEventListener('touchstart', (e) => {
@@ -297,6 +310,7 @@ lightbox.addEventListener('touchstart', (e) => {
   isMultiTouch = false;
   hardResetDrag();
   touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
   touchStartTime = performance.now();
   stageWidth = lbStage.getBoundingClientRect().width;
 }, { passive: true });
@@ -309,7 +323,21 @@ lightbox.addEventListener('touchmove', (e) => {
   }
   if (isMultiTouch || !stageWidth) return;
 
-  const raw = e.touches[0].clientX - touchStartX;
+  const rawX = e.touches[0].clientX - touchStartX;
+  const rawY = e.touches[0].clientY - touchStartY;
+
+  // decide once, early, whether this gesture is a horizontal swipe or a
+  // vertical scroll — and stick with it, so a swipe that drifts vertically
+  // (or vice versa) doesn't flip-flop mid-gesture
+  if (gestureAxis === null && (Math.abs(rawX) >= DEAD_ZONE || Math.abs(rawY) >= DEAD_ZONE)) {
+    gestureAxis = Math.abs(rawX) > Math.abs(rawY) ? 'x' : 'y';
+  }
+  if (gestureAxis !== 'x') {
+    if (dragDirection !== 0) { dragDelta = 0; dragDirection = 0; setDragX(lbImg, 0); lbPeekPrev.classList.remove('visible'); lbPeekNext.classList.remove('visible'); }
+    return;
+  }
+
+  const raw = rawX;
   let delta = Math.abs(raw) < DEAD_ZONE ? 0 : raw;
   const dir = delta < 0 ? 1 : delta > 0 ? -1 : 0;
   const neighbor = dir !== 0 ? IMAGES[currentIdx + dir] : null;
