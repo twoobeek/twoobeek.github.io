@@ -385,8 +385,8 @@ main {
   }
 
   .lb-stage {
-    flex: 0 0 55vh;
-    height: 55vh;
+    flex: 0 0 auto;
+    max-height: 55vh;
   }
 
   #lb-img,

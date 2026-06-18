@@ -149,7 +149,38 @@ function refreshPeeks() {
   setupPeek(lbPeekNext, currentIdx + 1);
 }
 
+const lbMobileQuery = window.matchMedia('(max-width: 700px)');
+
+// On the stacked mobile layout the stage used to size itself to whatever
+// height the in-flow <img> rendered at (so the gap to the title below felt
+// snug and consistent per picture). Now that the images are absolutely
+// positioned (for the drag-swipe), the stage no longer sizes around them
+// automatically, so we compute and set its height to match by hand.
+function applyStageHeight(item) {
+  if (!lbMobileQuery.matches) { lbStage.style.height = ''; return; }
+  const width = lbStage.getBoundingClientRect().width;
+  if (!width) return; // transient 0 during a layout/fullscreen transition — a retry below will catch it
+  const maxHeight = window.innerHeight * 0.55;
+  const heightFromWidth = width * (item.height / item.width);
+  lbStage.style.height = `${Math.min(heightFromWidth, maxHeight)}px`;
+}
+
+// Window resizes (e.g. exiting fullscreen) can briefly report a 0/stale
+// stage width mid-transition; a single read can land on that moment and
+// leave the stage permanently collapsed. Retry a few times shortly after
+// instead of trusting just one measurement.
+function recalcStageHeightSoon() {
+  const item = IMAGES[currentIdx];
+  applyStageHeight(item);
+  requestAnimationFrame(() => applyStageHeight(item));
+  setTimeout(() => applyStageHeight(item), 150);
+  setTimeout(() => applyStageHeight(item), 400);
+}
+window.addEventListener('resize', recalcStageHeightSoon);
+document.addEventListener('fullscreenchange', recalcStageHeightSoon);
+
 function setLightboxMeta(item) {
+  applyStageHeight(item);
   renderLightboxTitle(item);
   lbDescription.textContent = item.description || '';
   lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
