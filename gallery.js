@@ -59,6 +59,8 @@ function renderGallery() {
     img.loading = 'lazy';
     img.decoding = 'async';
     img.addEventListener('load', () => img.classList.add('visible'));
+    img.style.maxWidth = `${item.width}px`;
+    img.draggable = false;
     img.src = item.thumb || item.src;
 
     const caption = document.createElement('span');
@@ -133,6 +135,8 @@ function loadLightboxImage() {
   };
 
   lbImg.alt = item.alt;
+  lbImg.style.maxWidth = `min(100%, ${item.width}px)`;
+  lbImg.style.maxHeight = `min(100%, ${item.height}px)`;
   lbImg.src = item.src;
 
   lbBg.style.backgroundImage = `url(${item.src})`;
@@ -236,6 +240,11 @@ function reshuffleColors() {
 
 renderGallery();
 setInterval(reshuffleColors, 800);
+
+// Disable "Open/Save Image" right-click menu on the photos
+document.addEventListener('contextmenu', (e) => {
+  if (e.target.closest('#gallery img, #lb-img')) e.preventDefault();
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // BACKGROUND PREFETCH

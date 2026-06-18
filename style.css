@@ -100,8 +100,13 @@ main {
   display: block;
   width: 100%;
   height: auto;
+  margin: 0 auto;
   opacity: 0;
   transition: opacity 0.35s ease;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 
 .g-item img.visible {
@@ -227,6 +232,10 @@ main {
   object-fit: contain;
   opacity: 0;
   transition: opacity 0.18s ease;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
 }
 
 #lb-img.visible {
