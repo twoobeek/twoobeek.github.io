@@ -95,6 +95,8 @@ let openedViaKeyboard = false;
 
 const lightbox  = document.getElementById('lightbox');
 const lbImg     = document.getElementById('lb-img');
+const lbPeek    = document.getElementById('lb-peek');
+const lbStage   = lightbox.querySelector('.lb-stage');
 const lbCounter = lightbox.querySelector('.lb-counter');
 const lbTitle   = document.getElementById('lb-title');
 const lbDescription = document.getElementById('lb-description');
@@ -117,12 +119,24 @@ function closeLightbox() {
   lightbox.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   lbImg.src = '';
+  lbPeek.src = '';
+  lbPeek.classList.remove('visible');
+  delete lbPeek.dataset.idx;
   if (prevFocus && openedViaKeyboard) prevFocus.focus();
+}
+
+function setLightboxMeta(item) {
+  renderLightboxTitle(item);
+  lbDescription.textContent = item.description || '';
+  lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
+  lbBg.style.backgroundImage = `url(${item.src})`;
 }
 
 function loadLightboxImage(delta = 0) {
   const item = IMAGES[currentIdx];
 
+  lbImg.style.transition = 'none';
+  lbImg.style.setProperty('--drag-x', '0px');
   lbImg.classList.remove('visible', 'slide-from-left', 'slide-from-right');
   if (delta > 0) lbImg.classList.add('slide-from-right');
   else if (delta < 0) lbImg.classList.add('slide-from-left');
@@ -142,10 +156,7 @@ function loadLightboxImage(delta = 0) {
   lbImg.style.maxHeight = `min(100%, ${item.height}px)`;
   lbImg.src = item.src;
 
-  lbBg.style.backgroundImage = `url(${item.src})`;
-  renderLightboxTitle(item);
-  lbDescription.textContent = item.description || '';
-  lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
+  setLightboxMeta(item);
 }
 
 function renderLightboxTitle(item) {
@@ -206,25 +217,137 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight') navigate(1);
 });
 
-// Touch swipe support
-let touchX = 0;
+// Touch swipe support — the image tracks the finger 1:1, with the next/prev
+// picture peeking in from the side, and only commits to navigating once the
+// drag clears a distance/velocity threshold (otherwise it springs back).
 let isMultiTouch = false;
 let suppressClickUntil = 0;
+let touchStartX = 0;
+let touchStartTime = 0;
+let dragDelta = 0;
+let dragDirection = 0; // -1 = prev, 1 = next, 0 = none
+let stageWidth = 0;
+let swipeSettleTimeout = null;
+
+function setDragX(el, px) {
+  el.style.setProperty('--drag-x', `${px}px`);
+}
+
+function hardResetDrag() {
+  if (swipeSettleTimeout) { clearTimeout(swipeSettleTimeout); swipeSettleTimeout = null; }
+  lbImg.style.transition = 'none';
+  lbPeek.style.transition = 'none';
+  setDragX(lbImg, 0);
+  setDragX(lbPeek, 0);
+  lbPeek.classList.remove('visible');
+  lbImg.classList.add('visible');
+  dragDelta = 0;
+  dragDirection = 0;
+}
+
 lightbox.addEventListener('touchstart', (e) => {
-  isMultiTouch = e.touches.length > 1;
-  touchX = e.touches[0].clientX;
+  if (e.touches.length > 1) { isMultiTouch = true; return; }
+  isMultiTouch = false;
+  hardResetDrag();
+  touchStartX = e.touches[0].clientX;
+  touchStartTime = performance.now();
+  stageWidth = lbStage.getBoundingClientRect().width;
 }, { passive: true });
+
 lightbox.addEventListener('touchmove', (e) => {
-  if (e.touches.length > 1) isMultiTouch = true;
+  if (e.touches.length > 1) {
+    if (!isMultiTouch) hardResetDrag();
+    isMultiTouch = true;
+    return;
+  }
+  if (isMultiTouch || !stageWidth) return;
+
+  let delta = e.touches[0].clientX - touchStartX;
+  const dir = delta < 0 ? 1 : delta > 0 ? -1 : 0;
+  const neighbor = dir !== 0 ? IMAGES[currentIdx + dir] : null;
+  if (!neighbor) delta = 0;
+  delta = Math.max(-stageWidth, Math.min(stageWidth, delta));
+
+  dragDelta = delta;
+  dragDirection = delta === 0 ? 0 : dir;
+  setDragX(lbImg, delta);
+
+  if (dragDirection !== 0) {
+    if (lbPeek.dataset.idx !== String(currentIdx + dragDirection)) {
+      lbPeek.dataset.idx = String(currentIdx + dragDirection);
+      lbPeek.src = neighbor.thumb || neighbor.src;
+      lbPeek.style.maxWidth = `min(100%, ${neighbor.width}px)`;
+      lbPeek.style.maxHeight = `min(100%, ${neighbor.height}px)`;
+    }
+    lbPeek.classList.add('visible');
+    setDragX(lbPeek, dragDirection * stageWidth + delta);
+  } else {
+    lbPeek.classList.remove('visible');
+  }
 }, { passive: true });
-lightbox.addEventListener('touchend', (e) => {
+
+lightbox.addEventListener('touchend', () => {
   // after a pinch/multi-touch gesture, the browser may fire a synthetic
   // "click" afterwards — ignore it instead of letting it navigate
   suppressClickUntil = Date.now() + 500;
-  if (isMultiTouch) return;
-  const delta = e.changedTouches[0].clientX - touchX;
-  if (Math.abs(delta) > 50) navigate(delta < 0 ? 1 : -1);
+  if (isMultiTouch || !stageWidth) { hardResetDrag(); return; }
+
+  const elapsed = performance.now() - touchStartTime;
+  const velocity = dragDelta / Math.max(elapsed, 1); // px per ms
+  const committed = dragDirection !== 0 &&
+    (Math.abs(dragDelta) > stageWidth * 0.25 || Math.abs(velocity) > 0.5);
+
+  if (committed) completeSwipe(dragDirection);
+  else cancelSwipe();
 }, { passive: true });
+
+function cancelSwipe() {
+  lbImg.style.transition = 'transform 0.2s ease';
+  lbPeek.style.transition = 'transform 0.2s ease';
+  setDragX(lbImg, 0);
+  setDragX(lbPeek, 0);
+  dragDelta = 0;
+  dragDirection = 0;
+  swipeSettleTimeout = setTimeout(() => lbPeek.classList.remove('visible'), 200);
+}
+
+function completeSwipe(direction) {
+  lbImg.style.transition = 'transform 0.2s ease';
+  lbPeek.style.transition = 'transform 0.2s ease';
+  setDragX(lbImg, -direction * stageWidth);
+  setDragX(lbPeek, 0);
+
+  swipeSettleTimeout = setTimeout(() => {
+    currentIdx += direction;
+
+    // promote the peek image into the main slot instantly, no jump
+    lbImg.style.transition = 'none';
+    lbImg.onload = lbImg.onerror = null;
+    lbImg.src = lbPeek.src;
+    lbImg.style.maxWidth = lbPeek.style.maxWidth;
+    lbImg.style.maxHeight = lbPeek.style.maxHeight;
+    lbImg.classList.remove('slide-from-left', 'slide-from-right');
+    lbImg.classList.add('visible');
+    setDragX(lbImg, 0);
+
+    lbPeek.style.transition = 'none';
+    lbPeek.classList.remove('visible');
+    setDragX(lbPeek, 0);
+    delete lbPeek.dataset.idx;
+
+    dragDelta = 0;
+    dragDirection = 0;
+
+    const item = IMAGES[currentIdx];
+    lbImg.alt = item.alt;
+    setLightboxMeta(item);
+
+    // quietly upgrade from the (lighter) peek thumb to the full-res image
+    const full = new Image();
+    full.onload = () => { lbImg.src = item.src; };
+    full.src = item.src;
+  }, 200);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INIT
@@ -246,7 +369,7 @@ setInterval(reshuffleColors, 800);
 
 // Disable "Open/Save Image" right-click menu on the photos
 document.addEventListener('contextmenu', (e) => {
-  if (e.target.closest('#gallery img, #lb-img')) e.preventDefault();
+  if (e.target.closest('#gallery img, #lb-img, .lb-peek')) e.preventDefault();
 });
 
 // ─────────────────────────────────────────────────────────────────────────────

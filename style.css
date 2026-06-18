@@ -226,12 +226,17 @@ main {
   min-height: 0;
 }
 
-#lb-img {
+#lb-img,
+.lb-peek {
   display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
   opacity: 0;
+  transform: translate(calc(-50% + var(--drag-x, 0px)), -50%);
   -webkit-user-drag: none;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -239,22 +244,26 @@ main {
   -webkit-touch-callout: none;
 }
 
+#lb-img    { z-index: 2; }
+.lb-peek   { z-index: 1; pointer-events: none; }
+
 @keyframes lb-fade-in {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
 @keyframes lb-slide-in-right {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translate(calc(-50% + 20px), -50%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
 }
 @keyframes lb-slide-in-left {
-  from { opacity: 0; transform: translateX(-20px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from { opacity: 0; transform: translate(calc(-50% - 20px), -50%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
 }
 
 #lb-img.visible { animation: lb-fade-in 0.18s ease forwards; }
 #lb-img.visible.slide-from-right { animation: lb-slide-in-right 0.3s ease forwards; }
 #lb-img.visible.slide-from-left  { animation: lb-slide-in-left 0.3s ease forwards; }
+.lb-peek.visible { opacity: 1; }
 
 .lb-info {
   flex: 1;
@@ -379,7 +388,8 @@ main {
     flex: 0 0 auto;
   }
 
-  #lb-img {
+  #lb-img,
+  .lb-peek {
     max-height: 55vh;
   }
 
