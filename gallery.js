@@ -120,10 +120,13 @@ function closeLightbox() {
   if (prevFocus && openedViaKeyboard) prevFocus.focus();
 }
 
-function loadLightboxImage() {
+function loadLightboxImage(delta = 0) {
   const item = IMAGES[currentIdx];
 
-  lbImg.classList.remove('visible');
+  lbImg.classList.remove('visible', 'slide-from-left', 'slide-from-right');
+  if (delta > 0) lbImg.classList.add('slide-from-right');
+  else if (delta < 0) lbImg.classList.add('slide-from-left');
+  void lbImg.offsetWidth; // force reflow so the slide-from class applies before transitioning
   lbSpinner.classList.remove('hidden');
 
   lbImg.onload = () => {
@@ -182,7 +185,7 @@ function navigate(delta) {
   const next = currentIdx + delta;
   if (next >= 0 && next < IMAGES.length) {
     currentIdx = next;
-    loadLightboxImage();
+    loadLightboxImage(delta);
   }
 }
 

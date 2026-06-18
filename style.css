@@ -231,16 +231,28 @@ main {
   max-height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.18s ease;
   -webkit-user-drag: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   user-select: none;
 }
 
-#lb-img.visible {
-  opacity: 1;
+@keyframes lb-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
+@keyframes lb-slide-in-right {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes lb-slide-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+#lb-img.visible { animation: lb-fade-in 0.18s ease forwards; }
+#lb-img.visible.slide-from-right { animation: lb-slide-in-right 0.3s ease forwards; }
+#lb-img.visible.slide-from-left  { animation: lb-slide-in-left 0.3s ease forwards; }
 
 .lb-info {
   flex: 1;
