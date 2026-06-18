@@ -139,8 +139,7 @@ function setupPeek(peek, idx) {
   if (!neighbor) { hidePeek(peek); return; }
   if (peek.dataset.idx === String(idx)) return;
   peek.dataset.idx = String(idx);
-  peek.style.maxWidth = `min(100%, ${neighbor.width}px)`;
-  peek.style.maxHeight = `min(100%, ${neighbor.height}px)`;
+  applySizeCaps(peek, neighbor.width, neighbor.height);
   peek.src = neighbor.thumb || neighbor.src;
 }
 
@@ -162,6 +161,24 @@ const vhProbe = document.createElement('div');
 vhProbe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;top:0;left:0;width:0;height:55vh;';
 document.body.appendChild(vhProbe);
 
+// Caps an image's rendered size at its native resolution (never upscale)
+// while still letting it shrink to fit. On mobile, the height cap must NOT
+// be "100%" of the stage — the stage's own height is itself computed per
+// picture (see applyStageHeight) and may briefly still match the *outgoing*
+// picture (e.g. mid-swipe, before a commit), which would squeeze an
+// incoming picture of a different aspect ratio to the wrong box. Using the
+// same stable viewport probe instead makes the cap independent of whatever
+// the stage currently happens to be sized for.
+function applySizeCaps(el, width, height) {
+  el.style.maxWidth = `min(100%, ${width}px)`;
+  if (lbMobileQuery.matches) {
+    const vh55 = vhProbe.getBoundingClientRect().height;
+    el.style.maxHeight = `min(${vh55}px, ${height}px)`;
+  } else {
+    el.style.maxHeight = `min(100%, ${height}px)`;
+  }
+}
+
 // On the stacked mobile layout the stage used to size itself to whatever
 // height the in-flow <img> rendered at (so the gap to the title below felt
 // snug and consistent per picture). Now that the images are absolutely
@@ -182,10 +199,17 @@ function applyStageHeight(item) {
 // instead of trusting just one measurement.
 function recalcStageHeightSoon() {
   const item = IMAGES[currentIdx];
-  applyStageHeight(item);
-  requestAnimationFrame(() => applyStageHeight(item));
-  setTimeout(() => applyStageHeight(item), 150);
-  setTimeout(() => applyStageHeight(item), 400);
+  const refresh = () => {
+    applyStageHeight(item);
+    applySizeCaps(lbImg, item.width, item.height);
+    delete lbPeekPrev.dataset.idx;
+    delete lbPeekNext.dataset.idx;
+    refreshPeeks();
+  };
+  refresh();
+  requestAnimationFrame(refresh);
+  setTimeout(refresh, 150);
+  setTimeout(refresh, 400);
 }
 window.addEventListener('resize', recalcStageHeightSoon);
 document.addEventListener('fullscreenchange', recalcStageHeightSoon);
@@ -228,8 +252,7 @@ function loadLightboxImage(delta = 0) {
   };
 
   lbImg.alt = item.alt;
-  lbImg.style.maxWidth = `min(100%, ${item.width}px)`;
-  lbImg.style.maxHeight = `min(100%, ${item.height}px)`;
+  applySizeCaps(lbImg, item.width, item.height);
   lbImg.src = item.src;
 
   setLightboxMeta(item);
