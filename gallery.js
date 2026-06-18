@@ -93,10 +93,11 @@ let currentIdx = 0;
 let prevFocus = null;
 let openedViaKeyboard = false;
 
-const lightbox  = document.getElementById('lightbox');
-const lbImg     = document.getElementById('lb-img');
-const lbPeek    = document.getElementById('lb-peek');
-const lbStage   = lightbox.querySelector('.lb-stage');
+const lightbox     = document.getElementById('lightbox');
+const lbImg        = document.getElementById('lb-img');
+const lbPeekPrev   = document.getElementById('lb-peek-prev');
+const lbPeekNext   = document.getElementById('lb-peek-next');
+const lbStage      = lightbox.querySelector('.lb-stage');
 const lbCounter = lightbox.querySelector('.lb-counter');
 const lbTitle   = document.getElementById('lb-title');
 const lbDescription = document.getElementById('lb-description');
@@ -119,10 +120,33 @@ function closeLightbox() {
   lightbox.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   lbImg.src = '';
-  lbPeek.src = '';
-  lbPeek.classList.remove('visible');
-  delete lbPeek.dataset.idx;
+  hidePeek(lbPeekPrev);
+  hidePeek(lbPeekNext);
   if (prevFocus && openedViaKeyboard) prevFocus.focus();
+}
+
+function hidePeek(peek) {
+  peek.src = '';
+  peek.classList.remove('visible');
+  delete peek.dataset.idx;
+}
+
+// Pre-load the neighboring thumbs so a drag never has to swap an <img> src
+// mid-gesture (that's what caused the "blank in the middle" glitch on fast
+// back-and-forth swipes — src changes are async).
+function setupPeek(peek, idx) {
+  const neighbor = IMAGES[idx];
+  if (!neighbor) { hidePeek(peek); return; }
+  if (peek.dataset.idx === String(idx)) return;
+  peek.dataset.idx = String(idx);
+  peek.style.maxWidth = `min(100%, ${neighbor.width}px)`;
+  peek.style.maxHeight = `min(100%, ${neighbor.height}px)`;
+  peek.src = neighbor.thumb || neighbor.src;
+}
+
+function refreshPeeks() {
+  setupPeek(lbPeekPrev, currentIdx - 1);
+  setupPeek(lbPeekNext, currentIdx + 1);
 }
 
 function setLightboxMeta(item) {
@@ -157,6 +181,7 @@ function loadLightboxImage(delta = 0) {
   lbImg.src = item.src;
 
   setLightboxMeta(item);
+  refreshPeeks();
 }
 
 function renderLightboxTitle(item) {
@@ -218,8 +243,14 @@ document.addEventListener('keydown', (e) => {
 });
 
 // Touch swipe support — the image tracks the finger 1:1, with the next/prev
-// picture peeking in from the side, and only commits to navigating once the
-// drag clears a distance/velocity threshold (otherwise it springs back).
+// picture (pre-loaded ahead of time, see refreshPeeks) peeking in from the
+// side, and only commits to navigating once the drag clears a distance/
+// velocity threshold (otherwise it springs back).
+const DEAD_ZONE = 10;       // px of finger movement ignored, so vertical scrolling/jitter doesn't trigger anything
+const COMMIT_RATIO = 0.3;   // fraction of stage width that counts as a deliberate swipe
+const COMMIT_VELOCITY = 0.7; // px/ms flick speed that counts as deliberate
+const COMMIT_MIN_DISTANCE = 24; // a flick still needs to have moved this many px to commit
+
 let isMultiTouch = false;
 let suppressClickUntil = 0;
 let touchStartX = 0;
@@ -227,19 +258,35 @@ let touchStartTime = 0;
 let dragDelta = 0;
 let dragDirection = 0; // -1 = prev, 1 = next, 0 = none
 let stageWidth = 0;
-let swipeSettleTimeout = null;
+
+// Lets an in-flight 200ms "settle" animation (cancel or commit) be finished
+// immediately instead of silently dropped if a new touch starts before it's
+// done — otherwise rapid consecutive swipes could desync currentIdx from
+// what's on screen.
+let pendingSettle = null;
+function scheduleSettle(fn, delay) {
+  flushPendingSettle();
+  const timeoutId = setTimeout(() => { pendingSettle = null; fn(); }, delay);
+  pendingSettle = () => { clearTimeout(timeoutId); pendingSettle = null; fn(); };
+}
+function flushPendingSettle() {
+  if (pendingSettle) pendingSettle();
+}
 
 function setDragX(el, px) {
   el.style.setProperty('--drag-x', `${px}px`);
 }
 
 function hardResetDrag() {
-  if (swipeSettleTimeout) { clearTimeout(swipeSettleTimeout); swipeSettleTimeout = null; }
+  flushPendingSettle();
   lbImg.style.transition = 'none';
-  lbPeek.style.transition = 'none';
+  lbPeekPrev.style.transition = 'none';
+  lbPeekNext.style.transition = 'none';
   setDragX(lbImg, 0);
-  setDragX(lbPeek, 0);
-  lbPeek.classList.remove('visible');
+  setDragX(lbPeekPrev, 0);
+  setDragX(lbPeekNext, 0);
+  lbPeekPrev.classList.remove('visible');
+  lbPeekNext.classList.remove('visible');
   lbImg.classList.add('visible');
   dragDelta = 0;
   dragDirection = 0;
@@ -262,7 +309,8 @@ lightbox.addEventListener('touchmove', (e) => {
   }
   if (isMultiTouch || !stageWidth) return;
 
-  let delta = e.touches[0].clientX - touchStartX;
+  const raw = e.touches[0].clientX - touchStartX;
+  let delta = Math.abs(raw) < DEAD_ZONE ? 0 : raw;
   const dir = delta < 0 ? 1 : delta > 0 ? -1 : 0;
   const neighbor = dir !== 0 ? IMAGES[currentIdx + dir] : null;
   if (!neighbor) delta = 0;
@@ -272,17 +320,18 @@ lightbox.addEventListener('touchmove', (e) => {
   dragDirection = delta === 0 ? 0 : dir;
   setDragX(lbImg, delta);
 
-  if (dragDirection !== 0) {
-    if (lbPeek.dataset.idx !== String(currentIdx + dragDirection)) {
-      lbPeek.dataset.idx = String(currentIdx + dragDirection);
-      lbPeek.src = neighbor.thumb || neighbor.src;
-      lbPeek.style.maxWidth = `min(100%, ${neighbor.width}px)`;
-      lbPeek.style.maxHeight = `min(100%, ${neighbor.height}px)`;
-    }
-    lbPeek.classList.add('visible');
-    setDragX(lbPeek, dragDirection * stageWidth + delta);
+  // both peeks are already preloaded — just move whichever side is active
+  if (dragDirection === 1) {
+    lbPeekNext.classList.add('visible');
+    setDragX(lbPeekNext, stageWidth + delta);
   } else {
-    lbPeek.classList.remove('visible');
+    lbPeekNext.classList.remove('visible');
+  }
+  if (dragDirection === -1) {
+    lbPeekPrev.classList.add('visible');
+    setDragX(lbPeekPrev, -stageWidth + delta);
+  } else {
+    lbPeekPrev.classList.remove('visible');
   }
 }, { passive: true });
 
@@ -294,54 +343,56 @@ lightbox.addEventListener('touchend', () => {
 
   const elapsed = performance.now() - touchStartTime;
   const velocity = dragDelta / Math.max(elapsed, 1); // px per ms
-  const committed = dragDirection !== 0 &&
-    (Math.abs(dragDelta) > stageWidth * 0.25 || Math.abs(velocity) > 0.5);
+  const committed = dragDirection !== 0 && Math.abs(dragDelta) > COMMIT_MIN_DISTANCE &&
+    (Math.abs(dragDelta) > stageWidth * COMMIT_RATIO || Math.abs(velocity) > COMMIT_VELOCITY);
 
   if (committed) completeSwipe(dragDirection);
   else cancelSwipe(dragDirection);
 }, { passive: true });
 
 function cancelSwipe(direction) {
+  const peek = direction === 1 ? lbPeekNext : lbPeekPrev;
   lbImg.style.transition = 'transform 0.2s ease';
-  lbPeek.style.transition = 'transform 0.2s ease';
+  peek.style.transition = 'transform 0.2s ease';
   setDragX(lbImg, 0);
   // slide the peek back to where it started (off-screen), not to center
-  setDragX(lbPeek, direction * stageWidth);
+  setDragX(peek, direction * stageWidth);
   dragDelta = 0;
   dragDirection = 0;
-  swipeSettleTimeout = setTimeout(() => lbPeek.classList.remove('visible'), 200);
+  scheduleSettle(() => peek.classList.remove('visible'), 200);
 }
 
 function completeSwipe(direction) {
+  const peek = direction === 1 ? lbPeekNext : lbPeekPrev;
   lbImg.style.transition = 'transform 0.2s ease';
-  lbPeek.style.transition = 'transform 0.2s ease';
+  peek.style.transition = 'transform 0.2s ease';
   setDragX(lbImg, -direction * stageWidth);
-  setDragX(lbPeek, 0);
+  setDragX(peek, 0);
+  dragDelta = 0;
+  dragDirection = 0;
 
-  swipeSettleTimeout = setTimeout(() => {
+  scheduleSettle(() => {
     currentIdx += direction;
 
     // promote the peek image into the main slot instantly, no jump
     lbImg.style.transition = 'none';
     lbImg.onload = lbImg.onerror = null;
-    lbImg.src = lbPeek.src;
-    lbImg.style.maxWidth = lbPeek.style.maxWidth;
-    lbImg.style.maxHeight = lbPeek.style.maxHeight;
+    lbImg.src = peek.src;
+    lbImg.style.maxWidth = peek.style.maxWidth;
+    lbImg.style.maxHeight = peek.style.maxHeight;
     lbImg.classList.remove('slide-from-left', 'slide-from-right');
     lbImg.classList.add('visible');
     setDragX(lbImg, 0);
 
-    lbPeek.style.transition = 'none';
-    lbPeek.classList.remove('visible');
-    setDragX(lbPeek, 0);
-    delete lbPeek.dataset.idx;
-
-    dragDelta = 0;
-    dragDirection = 0;
+    peek.style.transition = 'none';
+    peek.classList.remove('visible');
+    setDragX(peek, 0);
+    delete peek.dataset.idx;
 
     const item = IMAGES[currentIdx];
     lbImg.alt = item.alt;
     setLightboxMeta(item);
+    refreshPeeks();
 
     // quietly upgrade from the (lighter) peek thumb to the full-res image
     const full = new Image();
