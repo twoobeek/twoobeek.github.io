@@ -151,6 +151,17 @@ function refreshPeeks() {
 
 const lbMobileQuery = window.matchMedia('(max-width: 700px)');
 
+// `window.innerHeight` shrinks/grows on mobile as the browser's address bar
+// auto-hides/shows (most noticeable on Firefox for Android), which made the
+// stage visibly resize itself shortly after each navigation. CSS `vh` is
+// spec'd to stay stable across that (it's *why* `dvh` exists as the dynamic
+// alternative) — so we measure the same stable value the image's own
+// `max-height: 55vh` rule already resolves to, via a tiny hidden probe,
+// instead of recomputing it from the volatile window.innerHeight.
+const vhProbe = document.createElement('div');
+vhProbe.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;top:0;left:0;width:0;height:55vh;';
+document.body.appendChild(vhProbe);
+
 // On the stacked mobile layout the stage used to size itself to whatever
 // height the in-flow <img> rendered at (so the gap to the title below felt
 // snug and consistent per picture). Now that the images are absolutely
@@ -160,7 +171,7 @@ function applyStageHeight(item) {
   if (!lbMobileQuery.matches) { lbStage.style.height = ''; return; }
   const width = lbStage.getBoundingClientRect().width;
   if (!width) return; // transient 0 during a layout/fullscreen transition — a retry below will catch it
-  const maxHeight = window.innerHeight * 0.55;
+  const maxHeight = vhProbe.getBoundingClientRect().height;
   const heightFromWidth = width * (item.height / item.width);
   lbStage.style.height = `${Math.min(heightFromWidth, maxHeight)}px`;
 }
