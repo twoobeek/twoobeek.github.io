@@ -298,14 +298,15 @@ lightbox.addEventListener('touchend', () => {
     (Math.abs(dragDelta) > stageWidth * 0.25 || Math.abs(velocity) > 0.5);
 
   if (committed) completeSwipe(dragDirection);
-  else cancelSwipe();
+  else cancelSwipe(dragDirection);
 }, { passive: true });
 
-function cancelSwipe() {
+function cancelSwipe(direction) {
   lbImg.style.transition = 'transform 0.2s ease';
   lbPeek.style.transition = 'transform 0.2s ease';
   setDragX(lbImg, 0);
-  setDragX(lbPeek, 0);
+  // slide the peek back to where it started (off-screen), not to center
+  setDragX(lbPeek, direction * stageWidth);
   dragDelta = 0;
   dragDirection = 0;
   swipeSettleTimeout = setTimeout(() => lbPeek.classList.remove('visible'), 200);
