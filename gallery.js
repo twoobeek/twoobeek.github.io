@@ -102,7 +102,15 @@ const lbBg      = document.getElementById('lb-bg');
 const lbSpinner = lightbox.querySelector('.lb-spinner');
 const lbClose   = lightbox.querySelector('.lb-close');
 
-function openLightbox(index) {
+function slugFor(item) {
+  return item.src.split('/').pop().replace(/\.[^.]+$/, '');
+}
+
+function indexForSlug(slug) {
+  return IMAGES.findIndex(item => slugFor(item) === slug);
+}
+
+function openLightbox(index, { updateHash = true } = {}) {
   prevFocus = document.activeElement;
   currentIdx = index;
   loadLightboxImage();
@@ -110,14 +118,16 @@ function openLightbox(index) {
   lightbox.setAttribute('aria-hidden', 'false');
   document.body.style.overflow = 'hidden';
   lbClose.focus();
+  if (updateHash) history.pushState(null, '', `#${slugFor(IMAGES[index])}`);
 }
 
-function closeLightbox() {
+function closeLightbox({ updateHash = true } = {}) {
   lightbox.classList.remove('open');
   lightbox.setAttribute('aria-hidden', 'true');
   document.body.style.overflow = '';
   lbImg.src = '';
   if (prevFocus && openedViaKeyboard) prevFocus.focus();
+  if (updateHash && location.hash) history.pushState(null, '', location.pathname + location.search);
 }
 
 function loadLightboxImage(delta = 0) {
@@ -186,6 +196,7 @@ function navigate(delta) {
   if (next >= 0 && next < IMAGES.length) {
     currentIdx = next;
     loadLightboxImage(delta);
+    history.replaceState(null, '', `#${slugFor(IMAGES[currentIdx])}`);
   }
 }
 
@@ -243,6 +254,26 @@ function reshuffleColors() {
 
 renderGallery();
 setInterval(reshuffleColors, 800);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DEEP LINKING (#picture_name opens that picture, like clicking its thumbnail)
+// ─────────────────────────────────────────────────────────────────────────────
+function applyHash() {
+  const slug = decodeURIComponent(location.hash.slice(1));
+  if (!slug) {
+    if (lightbox.classList.contains('open')) closeLightbox({ updateHash: false });
+    return;
+  }
+  const idx = indexForSlug(slug);
+  if (idx === -1) return;
+  if (lightbox.classList.contains('open') && idx === currentIdx) return;
+  openedViaKeyboard = false;
+  openLightbox(idx, { updateHash: false });
+}
+
+window.addEventListener('popstate', applyHash);
+window.addEventListener('hashchange', applyHash);
+applyHash();
 
 // Disable "Open/Save Image" right-click menu on the photos
 document.addEventListener('contextmenu', (e) => {
