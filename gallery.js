@@ -196,7 +196,7 @@ function navigate(delta) {
   if (next >= 0 && next < IMAGES.length) {
     currentIdx = next;
     loadLightboxImage(delta);
-    history.replaceState(null, '', `#${slugFor(IMAGES[currentIdx])}`);
+    history.pushState(null, '', `#${slugFor(IMAGES[currentIdx])}`);
   }
 }
 
