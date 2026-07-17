@@ -41,6 +41,8 @@ body {
 /* ── Header ── */
 header {
   padding: 2rem 2.5rem 0.8rem;
+  position: relative;
+  z-index: 1;
 }
 
 header h1 {
@@ -55,6 +57,8 @@ header h1 {
 /* ── Gallery ── */
 main {
   padding: 1.5rem;
+  position: relative;
+  z-index: 1;
 }
 
 #gallery {
