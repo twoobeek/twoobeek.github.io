@@ -1,3 +1,7 @@
+@property --c1 { syntax: '<color>'; inherits: false; initial-value: #699187; }
+@property --c2 { syntax: '<color>'; inherits: false; initial-value: #3d7a6e; }
+@property --c3 { syntax: '<color>'; inherits: false; initial-value: #4a5f9e; }
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -11,15 +15,27 @@
   --text:        #FDC300;
   --text-muted:  #c99e00;
   --gap:         14px;
+
 }
 
 html { color-scheme: dark; }
 
 body {
-  background: var(--bg);
+  background: linear-gradient(-45deg, var(--c1), var(--c2), var(--c3));
+  background-size: 400% 400%;
+  animation: bg-hue 6s linear infinite;
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   min-height: 100vh;
+}
+
+@keyframes bg-hue {
+  0%   { --c1: #699187; --c2: #3d7a6e; --c3: #ac786e; }
+  20%  { --c1: #3d7a6e; --c2: #ac786e; --c3: #608040; }
+  40%  { --c1: #ac786e; --c2: #608040; --c3: #b06040; }
+  60%  { --c1: #608040; --c2: #b06040; --c3: #699187; }
+  80%  { --c1: #b06040; --c2: #699187; --c3: #3d7a6e; }
+  100% { --c1: #699187; --c2: #3d7a6e; --c3: #ac786e; }
 }
 
 /* ── Header ── */
