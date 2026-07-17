@@ -152,7 +152,7 @@ function loadLightboxImage(delta = 0) {
   lbImg.style.maxHeight = `min(100%, ${item.height}px)`;
   lbImg.src = item.src;
 
-  lbBg.style.backgroundImage = `url(${item.src})`;
+  lbBg.style.backgroundImage = `url(${item.thumb || item.src})`;
   renderLightboxTitle(item);
   lbDescription.textContent = item.description || '';
   lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
