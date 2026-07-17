@@ -59,6 +59,8 @@ function renderGallery() {
     img.loading = 'lazy';
     img.decoding = 'async';
     img.addEventListener('load', () => img.classList.add('visible'));
+    img.width  = item.width;
+    img.height = item.height;
     img.style.maxWidth = `${item.width}px`;
     img.draggable = false;
     img.src = item.thumb || item.src;
