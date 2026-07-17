@@ -304,3 +304,41 @@ function prefetchFullImages() {
 }
 
 window.addEventListener('load', prefetchFullImages);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GRAIN OVERLAY
+// Small canvas stretched to fill the viewport, redrawn at ~12fps via rAF.
+// rAF pauses automatically when the tab is hidden, saving battery.
+// ─────────────────────────────────────────────────────────────────────────────
+(function () {
+  const GRAIN_SIZE = 256;
+  const INTERVAL   = 1000 / 12; // ~12fps
+
+  const canvas = document.createElement('canvas');
+  canvas.width  = GRAIN_SIZE;
+  canvas.height = GRAIN_SIZE;
+  canvas.style.cssText = [
+    'position:fixed', 'inset:0', 'width:100%', 'height:100%',
+    'pointer-events:none', 'z-index:0', 'opacity:0.035',
+  ].join(';');
+  document.body.appendChild(canvas);
+
+  const ctx  = canvas.getContext('2d');
+  const data = ctx.createImageData(GRAIN_SIZE, GRAIN_SIZE);
+  const buf  = data.data;
+
+  let last = 0;
+  function tick(ts) {
+    if (ts - last >= INTERVAL) {
+      last = ts;
+      for (let i = 0; i < buf.length; i += 4) {
+        const v = Math.random() * 255 | 0;
+        buf[i] = buf[i + 1] = buf[i + 2] = v;
+        buf[i + 3] = 255;
+      }
+      ctx.putImageData(data, 0, 0);
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}());
