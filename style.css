@@ -71,7 +71,6 @@ main {
   margin-bottom: var(--gap);
   overflow: hidden;
   cursor: pointer;
-  background: var(--surface);
   position: relative;
   display: block;
   border-radius: 10px;
