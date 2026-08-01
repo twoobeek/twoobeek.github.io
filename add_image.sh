@@ -82,7 +82,7 @@ else:
     entry = "  { src: " + json.dumps(src) + thumb_part + ", width: " + w + ", height: " + h + ", title: " + long_js + ", shortTitle: " + short_js + ", alt: " + short_js + " },"
 
 content = open(js_path).read()
-patched = re.sub(r"(\n\];)", "\n" + entry + r"\1", content, count=1)
+patched = re.sub(r"(\n\];)", lambda m: "\n" + entry + m.group(1), content, count=1)
 
 if patched == content:
     sys.exit("Error: could not locate IMAGES array closing ]; in gallery.js")
