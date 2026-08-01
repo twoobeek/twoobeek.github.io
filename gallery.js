@@ -255,7 +255,7 @@ function reshuffleColors() {
 }
 
 renderGallery();
-setInterval(reshuffleColors, 800);
+setInterval(reshuffleColors, 400);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEEP LINKING (#picture_name opens that picture, like clicking its thumbnail)
