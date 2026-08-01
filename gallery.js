@@ -222,11 +222,13 @@ document.addEventListener('keydown', (e) => {
 
 // Touch swipe support
 let touchX = 0;
+let touchY = 0;
 let isMultiTouch = false;
 let suppressClickUntil = 0;
 lightbox.addEventListener('touchstart', (e) => {
   isMultiTouch = e.touches.length > 1;
   touchX = e.touches[0].clientX;
+  touchY = e.touches[0].clientY;
 }, { passive: true });
 lightbox.addEventListener('touchmove', (e) => {
   if (e.touches.length > 1) isMultiTouch = true;
@@ -236,8 +238,9 @@ lightbox.addEventListener('touchend', (e) => {
   // "click" afterwards — ignore it instead of letting it navigate
   suppressClickUntil = Date.now() + 500;
   if (isMultiTouch) return;
-  const delta = e.changedTouches[0].clientX - touchX;
-  if (Math.abs(delta) > 50) navigate(delta < 0 ? 1 : -1);
+  const dx = e.changedTouches[0].clientX - touchX;
+  const dy = e.changedTouches[0].clientY - touchY;
+  if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) navigate(dx < 0 ? 1 : -1);
 }, { passive: true });
 
 // ─────────────────────────────────────────────────────────────────────────────
