@@ -23,7 +23,6 @@ const IMAGES = [
   { src: "images/wolfman.png", thumb: "images/thumbs/wolfman.webp", width: 945, height: 414, title: "Wolf Man", alt: "Wolf Man", rotateWords: { Man: -90 } },
   { src: "images/earth_angel.png", thumb: "images/thumbs/earth_angel.webp", width: 1728, height: 1647, title: "Earth Angel Defeating Duck O'Devil", shortTitle: "Earth Angel", alt: "Earth Angel", description: "You may not be able to hear it, but Halo the Living Nimbus exclaims: \"Yeah, dude! Get that fucking bastard! Gut the fucker! Cut its throat! Spill its blood!\"" },
   { src: "images/leonardo.png", thumb: "images/thumbs/leonardo.webp", width: 641, height: 581, title: "Leonardo da Vinci", shortTitle: "Leonardo", alt: "Leonardo", description: "Self-portrait, 1998, Oil on oak panel, Seattle Art Museum." },
-  { src: "images/phoenix.png", thumb: "images/thumbs/phoenix.webp", width: 420, height: 825, title: "\u706b\u306e\u9ce5", alt: "\u706b\u306e\u9ce5" },
   { src: "images/caught_your_eye.png", thumb: "images/thumbs/caught_your_eye.webp", width: 1589, height: 957, title: "caught your eye", alt: "caught your eye" },
 ];
 
