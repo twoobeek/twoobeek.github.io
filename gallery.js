@@ -17,6 +17,7 @@ const IMAGES = [
   { src: 'images/bad_dream.png',  thumb: 'images/thumbs/bad_dream.webp',  width: 1391, height: 1833, title: 'Bad Dream',  alt: 'Bad Dream' },
   { src: 'images/i_m_cooked.png', thumb: 'images/thumbs/i_m_cooked.webp', width: 1379, height: 2273, title: "Man, I'm Cooked", shortTitle: "I'm Cooked", alt: "I'm Cooked" },
   { src: 'images/mindreader.png',        thumb: 'images/thumbs/mindreader.webp',        width: 2561, height: 1941, title: 'Mindreader',          alt: 'Mindreader' },
+  { src: "images/watermelon_hat.png", thumb: "images/thumbs/watermelon_hat.webp", width: 1162, height: 1492, title: "Watermelon Hat", alt: "Watermelon Hat" },
   { src: 'images/toa_tahu_mata_sam.png', thumb: 'images/thumbs/toa_tahu_mata_sam.webp', width: 1667, height: 2120, title: 'Toa Tahu Mata Sam', alt: 'Toa Tahu Mata Sam' },
   { src: 'images/milky_way.png',         thumb: 'images/thumbs/milky_way.webp',         width: 1457, height: 610,  title: 'Milky Way', alt: 'Milky Way', description: "The global (international) version." },
   { src: "images/inoperable_brainfrog.png", thumb: "images/thumbs/inoperable_brainfrog.webp", width: 1197, height: 1545, title: "Inoperable Brainfrog", alt: "Inoperable Brainfrog" },
@@ -24,6 +25,7 @@ const IMAGES = [
   { src: "images/earth_angel.png", thumb: "images/thumbs/earth_angel.webp", width: 1728, height: 1647, title: "Earth Angel Defeating Duck O'Devil", shortTitle: "Earth Angel", alt: "Earth Angel", description: "You may not be able to hear it, but Halo the Living Nimbus exclaims: \"Yeah, dude! Get that fucking bastard! Gut the fucker! Cut its throat! Spill its blood!\"" },
   { src: "images/leonardo.png", thumb: "images/thumbs/leonardo.webp", width: 641, height: 581, title: "Leonardo da Vinci", shortTitle: "Leonardo", alt: "Leonardo", description: "Self-portrait, 1998, Oil on oak panel, Seattle Art Museum." },
   { src: "images/caught_your_eye.png", thumb: "images/thumbs/caught_your_eye.webp", width: 1589, height: 957, title: "caught your eye", alt: "caught your eye" },
+  { src: "images/phoenix.png", thumb: "images/thumbs/phoenix.webp", width: 420, height: 662, title: "\u706b\u306e\u9ce5", alt: "\u706b\u306e\u9ce5" },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
