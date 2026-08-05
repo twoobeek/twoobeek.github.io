@@ -243,7 +243,9 @@ lightbox.addEventListener('touchend', (e) => {
   // after a pinch/multi-touch gesture, the browser may fire a synthetic
   // "click" afterwards — ignore it instead of letting it navigate
   suppressClickUntil = Date.now() + 500;
-  if (isMultiTouch) return;
+  const wasMultiTouch = isMultiTouch;
+  if (e.touches.length === 0) isMultiTouch = false; // all fingers lifted — reset for next gesture
+  if (wasMultiTouch) return;
   const dx = e.changedTouches[0].clientX - touchX;
   const dy = e.changedTouches[0].clientY - touchY;
   if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) navigate(dx < 0 ? 1 : -1);
@@ -286,6 +288,15 @@ function applyHash() {
 window.addEventListener('popstate', applyHash);
 window.addEventListener('hashchange', applyHash);
 applyHash();
+
+// When the browser restores this page from the back-forward cache (bfcache),
+// JS state is frozen in place — if the lightbox was mid-close, overflow:hidden
+// can be stuck. Reset it on every page restore.
+window.addEventListener('pageshow', (e) => {
+  if (e.persisted && !lightbox.classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
+});
 
 // Disable "Open/Save Image" right-click menu on the photos
 document.addEventListener('contextmenu', (e) => {
