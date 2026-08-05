@@ -157,7 +157,11 @@ function loadLightboxImage(delta = 0) {
   lbImg.style.maxHeight = `min(100%, ${item.height}px)`;
   lbImg.src = item.src;
 
-  lbBg.style.backgroundImage = `url(${item.thumb || item.src})`;
+  const bgSrc = item.thumb || item.src;
+  const bgPreload = new Image();
+  bgPreload.onload  = () => { lbBg.style.backgroundImage = `url(${bgSrc})`; };
+  bgPreload.onerror = () => { lbBg.style.backgroundImage = `url(${bgSrc})`; };
+  bgPreload.src = bgSrc;
   renderLightboxTitle(item);
   lbDescription.textContent = item.description || '';
   lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
