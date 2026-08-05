@@ -141,7 +141,6 @@ function loadLightboxImage(delta = 0) {
   lbImg.classList.remove('visible', 'slide-from-left', 'slide-from-right');
   if (delta > 0) lbImg.classList.add('slide-from-right');
   else if (delta < 0) lbImg.classList.add('slide-from-left');
-  void lbImg.offsetWidth; // force reflow so the slide-from class applies before transitioning
   lbSpinner.classList.remove('hidden');
 
   lbImg.onload = () => {
