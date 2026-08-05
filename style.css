@@ -187,8 +187,10 @@ main {
   background-repeat: no-repeat;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  transform: scale(3);
+  transform: scale(3) translateZ(0);
   transform-origin: center center;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .lb-bg::after {
@@ -212,6 +214,7 @@ main {
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.22s ease;
+  will-change: opacity;
 }
 
 .lightbox.open {
@@ -253,6 +256,8 @@ main {
   object-fit: contain;
   opacity: 0;
   will-change: opacity, transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   -webkit-user-drag: none;
   -webkit-user-select: none;
   -moz-user-select: none;

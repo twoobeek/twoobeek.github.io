@@ -143,12 +143,21 @@ function loadLightboxImage(delta = 0) {
   else if (delta < 0) lbImg.classList.add('slide-from-left');
   lbSpinner.classList.remove('hidden');
 
+  const bgSrc = item.thumb || item.src;
+
   lbImg.onload = () => {
     lbSpinner.classList.add('hidden');
-    lbImg.classList.add('visible');
+    // Batch image reveal and background swap into the same animation frame
+    // so both GPU layers update together — prevents the "different layers
+    // appearing at different times" flicker on WebKit/DDG.
+    requestAnimationFrame(() => {
+      lbImg.classList.add('visible');
+      lbBg.style.backgroundImage = `url(${bgSrc})`;
+    });
   };
   lbImg.onerror = () => {
     lbSpinner.classList.add('hidden');
+    lbBg.style.backgroundImage = `url(${bgSrc})`;
   };
 
   lbImg.alt = item.alt;
@@ -156,11 +165,7 @@ function loadLightboxImage(delta = 0) {
   lbImg.style.maxHeight = `min(100%, ${item.height}px)`;
   lbImg.src = item.src;
 
-  const bgSrc = item.thumb || item.src;
-  const bgPreload = new Image();
-  bgPreload.onload  = () => { lbBg.style.backgroundImage = `url(${bgSrc})`; };
-  bgPreload.onerror = () => { lbBg.style.backgroundImage = `url(${bgSrc})`; };
-  bgPreload.src = bgSrc;
+  new Image().src = bgSrc; // warm the cache so bg is ready when lbImg loads
   renderLightboxTitle(item);
   lbDescription.textContent = item.description || '';
   lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
