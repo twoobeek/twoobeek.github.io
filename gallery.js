@@ -17,7 +17,7 @@ const IMAGES = [
   { src: 'images/bad_dream.png',  thumb: 'images/thumbs/bad_dream.webp',  width: 1391, height: 1833, title: 'Bad Dream',  alt: 'Bad Dream' },
   { src: 'images/i_m_cooked.png', thumb: 'images/thumbs/i_m_cooked.webp', width: 1379, height: 2273, title: "Man, I'm Cooked", shortTitle: "I'm Cooked", alt: "I'm Cooked" },
   { src: 'images/mindreader.png',        thumb: 'images/thumbs/mindreader.webp',        width: 2561, height: 1941, title: 'Mindreader',          alt: 'Mindreader' },
-  { src: "images/watermelon_hat.png", thumb: "images/thumbs/watermelon_hat.webp", width: 1162, height: 1492, title: "A Watermelon Hat", alt: "Watermelon Hat" },
+    { src: "images/watermelon_hat.png", thumb: "images/thumbs/watermelon_hat.webp", width: 1162, height: 1492, title: "A Watermelon Hat", shortTitle: "Watermelon Hat", alt: "Watermelon Hat" },
   { src: 'images/toa_tahu_mata_sam.png', thumb: 'images/thumbs/toa_tahu_mata_sam.webp', width: 1667, height: 2120, title: 'Toa Tahu Mata Sam', alt: 'Toa Tahu Mata Sam' },
   { src: 'images/milky_way.png',         thumb: 'images/thumbs/milky_way.webp',         width: 1457, height: 610,  title: 'Milky Way', alt: 'Milky Way', description: "The global (international) version." },
   { src: "images/inoperable_brainfrog.png", thumb: "images/thumbs/inoperable_brainfrog.webp", width: 1197, height: 1545, title: "Inoperable Brainfrog", alt: "Inoperable Brainfrog" },
