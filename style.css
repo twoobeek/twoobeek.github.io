@@ -14,7 +14,7 @@
   --border:      #4b6f69;
   --text:        #FDC300;
   --text-muted:  #c99e00;
-  --gap:         29px;
+  --gap:         14px;
 
 }
 
@@ -188,6 +188,8 @@ main {
     transition: none;
   }
 }
+
+@media (orientation: landscape) { :root { --gap: 29px; } }
 
 @media (max-width: 900px) { #gallery { columns: 3; } }
 @media (max-width: 600px) { #gallery { columns: 2; } }
