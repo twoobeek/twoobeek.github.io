@@ -54,6 +54,15 @@ header h1 {
   user-select: none;
 }
 
+/* ── Footer ── */
+footer {
+  margin-top: 2rem;
+  padding: 2rem 2.5rem 0.8rem;
+  background: #000;
+  position: relative;
+  z-index: 1;
+}
+
 /* ── Gallery ── */
 main {
   padding: 1.5rem;
@@ -74,6 +83,7 @@ main {
   position: relative;
   display: block;
   border-radius: 10px;
+  background: var(--bg);
   transition: transform 0.2s ease;
   animation: g-float var(--float-dur, 5s) linear infinite;
   animation-delay: var(--float-delay, 0s);
@@ -175,6 +185,31 @@ main {
 }
 
 @media (orientation: landscape) { :root { --gap: 29px; } }
+
+/* ── Hover background title ── */
+#bg-title {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 0;
+  pointer-events: none;
+  font-size: clamp(4rem, 20vw, 18rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-align: center;
+  word-break: break-word;
+  padding: 1rem;
+  overflow: hidden;
+  user-select: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+#bg-title.visible { opacity: 1; }
+
 
 @media (max-width: 900px) { #gallery { columns: 3; } }
 @media (max-width: 600px) { #gallery { columns: 2; } }

@@ -35,6 +35,14 @@ function renderGallery() {
   const container = document.getElementById('gallery');
   container.innerHTML = '';
 
+  let bgTitle = document.getElementById('bg-title');
+  if (!bgTitle) {
+    bgTitle = document.createElement('div');
+    bgTitle.id = 'bg-title';
+    document.body.appendChild(bgTitle);
+  }
+
+
   IMAGES.forEach((item, idx) => {
     const fig = document.createElement('figure');
     fig.className = 'g-item';
@@ -51,8 +59,18 @@ function renderGallery() {
     fig.style.setProperty('--float-delay', `-${(Math.random() * 7).toFixed(1)}s`);
 
     const randomAngle = () => (Math.random() * 1.8 + 0.7) * (Math.random() < 0.5 ? 1 : -1);
-    fig.addEventListener('mouseenter', () => fig.style.setProperty('--hover-rotate', `${randomAngle().toFixed(1)}deg`));
-    fig.addEventListener('focus', () => fig.style.setProperty('--hover-rotate', `${randomAngle().toFixed(1)}deg`));
+    fig.addEventListener('mouseenter', () => {
+      fig.style.setProperty('--hover-rotate', `${randomAngle().toFixed(1)}deg`);
+      bgTitle.textContent = item.title || item.shortTitle;
+      bgTitle.classList.add('visible');
+    });
+    fig.addEventListener('mouseleave', () => bgTitle.classList.remove('visible'));
+    fig.addEventListener('focus', () => {
+      fig.style.setProperty('--hover-rotate', `${randomAngle().toFixed(1)}deg`);
+      bgTitle.textContent = item.title || item.shortTitle;
+      bgTitle.classList.add('visible');
+    });
+    fig.addEventListener('blur', () => bgTitle.classList.remove('visible'));
     fig.setAttribute('role', 'button');
     fig.setAttribute('tabindex', '0');
     fig.setAttribute('aria-label', item.alt || `Photo ${idx + 1}`);
@@ -64,7 +82,7 @@ function renderGallery() {
     img.addEventListener('load', () => img.classList.add('visible'));
     img.width  = item.width;
     img.height = item.height;
-    img.style.maxWidth = `${item.width}px`;
+    img.style.maxWidth = `${Math.max(item.width, 2000)}px`;
     img.draggable = false;
     img.src = item.thumb || item.src;
 
