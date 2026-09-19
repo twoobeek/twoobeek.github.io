@@ -124,9 +124,11 @@ footer {
   transition: background 0.15s ease, color 0.15s ease;
 }
 
-#dark-mode-btn:hover {
-  background: var(--text);
-  color: #000;
+@media (hover: hover) and (pointer: fine) {
+  #dark-mode-btn:hover {
+    background: var(--text);
+    color: #000;
+  }
 }
 
 /* ── Gallery ── */
