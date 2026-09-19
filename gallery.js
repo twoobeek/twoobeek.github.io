@@ -276,10 +276,12 @@ lightbox.addEventListener('touchend', (e) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // INIT
 // ─────────────────────────────────────────────────────────────────────────────
-const TITLE_COLORS = ['#FDC300', '#C73D1D', '#19519F', '#C75C7A', '#1C7436', '#14263E', '#C6B290', '#FA2500', '#556975'];
+const TITLE_COLORS_LIGHT = ['#FDC300', '#C73D1D', '#19519F', '#C75C7A', '#1C7436', '#14263E', '#C6B290', '#FA2500', '#556975'];
+const TITLE_COLORS_DARK  = ['#FF0000', '#FF6600', '#FFFF00', '#00FF00', '#00FFFF', '#0088FF', '#FF00FF', '#FF0088', '#FFFFFF', '#FF3300', '#00FF88', '#FF44AA'];
 
 function randomColor() {
-  return TITLE_COLORS[Math.floor(Math.random() * TITLE_COLORS.length)];
+  const palette = document.body.classList.contains('dark-mode') ? TITLE_COLORS_DARK : TITLE_COLORS_LIGHT;
+  return palette[Math.floor(Math.random() * palette.length)];
 }
 
 function reshuffleColors() {
@@ -288,8 +290,30 @@ function reshuffleColors() {
   });
 }
 
+let colorInterval = null;
+function startColorInterval() {
+  clearInterval(colorInterval);
+  colorInterval = setInterval(reshuffleColors, document.body.classList.contains('dark-mode') ? 130 : 400);
+}
+
 renderGallery();
-setInterval(reshuffleColors, 400);
+startColorInterval();
+
+// ── Dark mode toggle ──
+const darkModeBtn = document.getElementById('dark-mode-btn');
+
+function setDarkMode(on) {
+  document.body.classList.toggle('dark-mode', on);
+  darkModeBtn.textContent = on ? 'Light Mode' : 'Dark Mode';
+  localStorage.setItem('darkMode', on ? '1' : '0');
+  startColorInterval();
+}
+
+const initDark = localStorage.getItem('darkMode') === '1';
+if (initDark) setDarkMode(true);
+else darkModeBtn.textContent = 'Dark Mode';
+
+darkModeBtn.addEventListener('click', () => setDarkMode(!document.body.classList.contains('dark-mode')));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // DEEP LINKING (#picture_name opens that picture, like clicking its thumbnail)

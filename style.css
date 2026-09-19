@@ -15,7 +15,6 @@
   --text:        #FDC300;
   --text-muted:  #c99e00;
   --gap:         14px;
-
 }
 
 html { color-scheme: dark; }
@@ -38,11 +37,23 @@ body {
   100% { --c1: #699187; --c2: #3d7a6e; --c3: #ac786e; }
 }
 
+@keyframes bg-hue-dark {
+  0%   { --c1: #00FFFF; --c2: #00FF00; --c3: #FF2200; }
+  20%  { --c1: #00FF00; --c2: #FF2200; --c3: #FFFF00; }
+  40%  { --c1: #FF2200; --c2: #FFFF00; --c3: #FF00FF; }
+  60%  { --c1: #FFFF00; --c2: #FF00FF; --c3: #00FFFF; }
+  80%  { --c1: #FF00FF; --c2: #00FFFF; --c3: #00FF00; }
+  100% { --c1: #00FFFF; --c2: #00FF00; --c3: #FF2200; }
+}
+
 /* ── Header ── */
 header {
   padding: 2rem 2.5rem 0.8rem;
   position: relative;
   z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
 }
 
 header h1 {
@@ -54,6 +65,42 @@ header h1 {
   user-select: none;
 }
 
+#dark-mode-label {
+  display: none;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #39FF14;
+  user-select: none;
+}
+
+body.dark-mode #dark-mode-label {
+  display: inline;
+}
+
+/* ── Dark mode (the bad kind) ── */
+body.dark-mode {
+  --bg:         #00FFFF;
+  --surface:    #00FF88;
+  --border:     #FF2200;
+  --text:       #FFFF00;
+  --text-muted: #FF00FF;
+  animation: bg-hue-dark 6s linear infinite;
+}
+
+body.dark-mode .g-item img {
+  filter: saturate(1.6) brightness(1.08) contrast(1.1);
+}
+
+body.dark-mode .g-item img.visible {
+  opacity: 1;
+}
+
+body.dark-mode .lb-bg::after {
+  background: rgba(0, 255, 255, 0.82);
+}
+
 /* ── Footer ── */
 footer {
   margin-top: 2rem;
@@ -61,6 +108,25 @@ footer {
   background: #000;
   position: relative;
   z-index: 1;
+}
+
+#dark-mode-btn {
+  background: none;
+  border: 1px solid var(--text);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+#dark-mode-btn:hover {
+  background: var(--text);
+  color: #000;
 }
 
 /* ── Gallery ── */
@@ -514,4 +580,6 @@ main {
 @media (max-width: 600px) {
   header { padding: 1.25rem 1rem; }
   main   { padding: 0.75rem; }
+  footer { padding: 1rem; }
+  #dark-mode-btn { font-size: 0.75rem; padding: 0.35rem 0.8rem; }
 }
