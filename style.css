@@ -104,7 +104,9 @@ body.dark-mode .lb-bg::after {
 /* ── Footer ── */
 footer {
   margin-top: 2rem;
-  padding: 2rem 2.5rem 0.8rem;
+  padding: 1.4rem 2.5rem;
+  display: flex;
+  align-items: center;
   background: #000;
   position: relative;
   z-index: 1;
@@ -463,6 +465,7 @@ main {
   text-transform: none;
   color: var(--text);
   line-height: 1.4;
+  white-space: pre-line;
   word-break: break-word;
   user-select: none;
 }

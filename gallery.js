@@ -12,20 +12,26 @@
 //   rotateWords – optional, e.g. { Wolf: -90 } rotates the word "Wolf" by
 //                 -90deg (counterclockwise) when shown in the lightbox title
 //   description – optional, small text shown below the title in the lightbox
+//                 can also be a list of variants, one picked at random each
+//                 time the picture is opened, e.g.
+//                   ["Text A", "Text B"]                          – 50% / 50%
+//                   [{ text: "Common", weight: 9 }, "Rare"]       – 90% / 10%
+//                 plain strings have weight 1
 // ─────────────────────────────────────────────────────────────────────────────
 const IMAGES = [
-  { src: 'images/bad_dream.png',  thumb: 'images/thumbs/bad_dream.webp',  width: 1391, height: 1833, title: 'Bad Dream',  alt: 'Bad Dream' },
-  { src: 'images/i_m_cooked.png', thumb: 'images/thumbs/i_m_cooked.webp', width: 1379, height: 2273, title: "Man, I'm Cooked", shortTitle: "I'm Cooked", alt: "I'm Cooked" },
-  { src: 'images/mindreader.png',        thumb: 'images/thumbs/mindreader.webp',        width: 2561, height: 1941, title: 'Mindreader',          alt: 'Mindreader' },
-    { src: "images/watermelon_hat.png", thumb: "images/thumbs/watermelon_hat.webp", width: 1162, height: 1492, title: "A Watermelon Hat", shortTitle: "Watermelon Hat", alt: "Watermelon Hat" },
-  { src: 'images/toa_tahu_mata_sam.png', thumb: 'images/thumbs/toa_tahu_mata_sam.webp', width: 1667, height: 2120, title: 'Toa Tahu Mata Sam', alt: 'Toa Tahu Mata Sam' },
-  { src: 'images/milky_way.png',         thumb: 'images/thumbs/milky_way.webp',         width: 1457, height: 610,  title: 'Milky Way', alt: 'Milky Way', description: "The global (international) version." },
+  { src: "images/bad_dream.png", thumb: "images/thumbs/bad_dream.webp", width: 1391, height: 1833, title: "Bad Dream", alt: "Bad Dream" },
+  { src: "images/i_m_cooked.png", thumb: "images/thumbs/i_m_cooked.webp", width: 1379, height: 2273, title: "Man, I'm Cooked", shortTitle: "I'm Cooked", alt: "I'm Cooked" },
+  { src: "images/mindreader.png", thumb: "images/thumbs/mindreader.webp", width: 2561, height: 1941, title: "Mindreader", alt: "Mindreader" },
+  { src: "images/watermelon_hat.png", thumb: "images/thumbs/watermelon_hat.webp", width: 1162, height: 1492, title: "A Watermelon Hat", shortTitle: "Watermelon Hat", alt: "Watermelon Hat" },
+  { src: "images/toa_tahu_mata_sam.png", thumb: "images/thumbs/toa_tahu_mata_sam.webp", width: 1667, height: 2120, title: "Toa Tahu Mata Sam", alt: "Toa Tahu Mata Sam" },
+  { src: "images/milky_way.png", thumb: "images/thumbs/milky_way.webp", width: 1457, height: 610, title: "Milky Way", alt: "Milky Way", description: "The global (international) version." },
   { src: "images/inoperable_brainfrog.png", thumb: "images/thumbs/inoperable_brainfrog.webp", width: 1197, height: 1545, title: "Inoperable Brainfrog", alt: "Inoperable Brainfrog" },
   { src: "images/wolfman.png", thumb: "images/thumbs/wolfman.webp", width: 945, height: 414, title: "Wolf Man", alt: "Wolf Man", rotateWords: { Man: -90 } },
   { src: "images/earth_angel.png", thumb: "images/thumbs/earth_angel.webp", width: 1728, height: 1647, title: "Earth Angel Defeating Duck O'Devil", shortTitle: "Earth Angel", alt: "Earth Angel", description: "You may not be able to hear it, but Halo the Living Nimbus exclaims: \"Yeah, dude! Get that fucking bastard! Gut the fucker! Cut its throat! Spill its blood!\"" },
   { src: "images/leonardo.png", thumb: "images/thumbs/leonardo.webp", width: 641, height: 581, title: "Leonardo da Vinci", shortTitle: "Leonardo", alt: "Leonardo", description: "Self-portrait, 1998, Oil on oak panel, Seattle Art Museum." },
   { src: "images/caught_your_eye.png", thumb: "images/thumbs/caught_your_eye.webp", width: 1589, height: 957, title: "caught your eye", alt: "caught your eye" },
   { src: "images/phoenix.png", thumb: "images/thumbs/phoenix.webp", width: 420, height: 662, title: "\u706b\u306e\u9ce5", alt: "\u706b\u306e\u9ce5" },
+  { src: "images/okko.png", thumb: "images/thumbs/okko.webp", width: 1155, height: 1510, title: "OKKO Hotels", shortTitle: "OKKO", alt: "OKKO", description: [{ text: "Les hôtels des voyageurs casaniers.", weight: 99 }, { text: "Я хочу разложиться на двое,\nСам с собой говорить обо всём,\nИ кружиться черной вороной,\nНад могилой где я погребён.", weight: 1 }] },
 ];
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -185,8 +191,20 @@ function loadLightboxImage(delta = 0) {
 
   new Image().src = bgSrc; // warm the cache so bg is ready when lbImg loads
   renderLightboxTitle(item);
-  lbDescription.textContent = item.description || '';
+  lbDescription.textContent = pickDescription(item.description);
   lbCounter.textContent = `${currentIdx + 1} / ${IMAGES.length}`;
+}
+
+function pickDescription(desc) {
+  if (!Array.isArray(desc)) return desc || '';
+  const variants = desc.map(v => typeof v === 'string' ? { text: v, weight: 1 } : v);
+  const total = variants.reduce((sum, v) => sum + (v.weight ?? 1), 0);
+  let r = Math.random() * total;
+  for (const v of variants) {
+    r -= v.weight ?? 1;
+    if (r < 0) return v.text;
+  }
+  return variants.length ? variants[variants.length - 1].text : '';
 }
 
 function renderLightboxTitle(item) {
@@ -305,11 +323,13 @@ const darkModeBtn = document.getElementById('dark-mode-btn');
 function setDarkMode(on) {
   document.body.classList.toggle('dark-mode', on);
   darkModeBtn.textContent = on ? 'Light Mode' : 'Dark Mode';
-  localStorage.setItem('darkMode', on ? '1' : '0');
+  try { localStorage.setItem('darkMode', on ? '1' : '0'); } catch {}
   startColorInterval();
 }
 
-const initDark = localStorage.getItem('darkMode') === '1';
+// localStorage can throw when storage is blocked (e.g. some private modes)
+let initDark = false;
+try { initDark = localStorage.getItem('darkMode') === '1'; } catch {}
 if (initDark) setDarkMode(true);
 else darkModeBtn.textContent = 'Dark Mode';
 
