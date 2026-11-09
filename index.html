@@ -4,11 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Twoobeek</title>
+  <link rel="preload" href="fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Hand-drawn "line boil": the same shape redrawn with a slightly different wobble -->
+  <svg class="defs" width="0" height="0" aria-hidden="true" focusable="false">
+    <filter id="boil-0"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="3.5"/></filter>
+    <filter id="boil-1"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="5"/><feDisplacementMap in="SourceGraphic" scale="3.5"/></filter>
+    <filter id="boil-2"><feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="2" seed="17"/><feDisplacementMap in="SourceGraphic" scale="3.5"/></filter>
+  </svg>
+
   <header>
-    <h1>TWOOBEEK</h1>
+    <h1 aria-label="Twoobeek">
+      <span class="wm-letter" aria-hidden="true">T</span><span class="wm-letter" aria-hidden="true">W</span><span class="wm-letter" aria-hidden="true">O</span><span class="wm-letter" aria-hidden="true">O</span><span class="wm-letter" aria-hidden="true">B</span><span class="wm-letter" aria-hidden="true">E</span><span class="wm-letter" aria-hidden="true">E</span><span class="wm-letter" aria-hidden="true">K</span>
+    </h1>
     <span id="dark-mode-label">Dark Mode</span>
   </header>
 

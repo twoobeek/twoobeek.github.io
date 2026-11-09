@@ -109,7 +109,12 @@ function renderGallery() {
     fig.appendChild(caption);
 
     fig.addEventListener('click', () => { openedViaKeyboard = false; openLightbox(idx); });
-    fig.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { openedViaKeyboard = true; openLightbox(idx); } });
+    fig.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      e.preventDefault(); // otherwise this same keypress also activates the close button, which gets focus on open
+      openedViaKeyboard = true;
+      openLightbox(idx);
+    });
 
     container.appendChild(fig);
   });
@@ -316,6 +321,48 @@ function startColorInterval() {
 
 renderGallery();
 startColorInterval();
+startBoil();
+startLetterFlips();
+
+// Rotated title words are measured, so re-measure once the real font has arrived.
+document.fonts?.ready.then(() => {
+  if (lightbox.classList.contains('open')) renderLightboxTitle(IMAGES[currentIdx]);
+});
+
+// ── Title outlines wobble constantly, at a stop-motion frame rate ──
+function startBoil() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  let frame = 0;
+  setInterval(() => {
+    if (document.hidden) return;
+    frame = (frame + 1) % 3;
+    document.documentElement.dataset.boil = frame;
+  }, 167);
+}
+
+// ── Random wordmark letters briefly flip to a form with a random palette colour ──
+function startLetterFlips() {
+  const letters = [...document.querySelectorAll('.wm-letter')];
+  const pickColor = letter => letter.style.setProperty('--flip', randomColor());
+  letters.forEach(letter => letter.addEventListener('mouseenter', () => pickColor(letter)));
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const flip = () => {
+    if (!document.hidden) {
+      const idle = letters.filter(l => !l.classList.contains('is-flipped'));
+      const count = Math.random() < 0.25 ? 2 : 1;
+      for (let i = 0; i < count && idle.length; i++) {
+        const [letter] = idle.splice(Math.floor(Math.random() * idle.length), 1);
+        pickColor(letter);
+        letter.classList.add('is-flipped');
+        setTimeout(() => letter.classList.remove('is-flipped'), 120 + Math.random() * 130);
+      }
+    }
+    setTimeout(flip, 8000 + Math.random() * 8000);
+  };
+  flip();
+}
 
 // ── Dark mode toggle ──
 const darkModeBtn = document.getElementById('dark-mode-btn');
